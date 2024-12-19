@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Pls keep the filenames sorted
 set(TESTS_SOURCE_FILES
+    detail/expected.cpp
     detail/fwd_macro.cpp
     detail/meta.cpp
     detail/variadic_union.cpp

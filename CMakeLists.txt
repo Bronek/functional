@@ -20,8 +20,9 @@ endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_compile_options(
-  -march=native -Wall -Wextra -Wpedantic "$<$<CONFIG:DEBUG>:-O0>"
+  -march=native -Wall -Wextra -Wpedantic "$<$<CONFIG:DEBUG>:-O0>" -Wno-non-template-friend
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
