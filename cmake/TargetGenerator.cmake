@@ -1,33 +1,45 @@
-# Target generator to enforce that a HEADER file compiles cleanly with no additional includes
+# Generate target for a given source file, and optionally add it to tests
 
-function(setup_target_for_header)
-    set(oneValueArgs SUFFIX HEADER SOURCE_ROOT)
-    set(multiValueArgs DEPENDENCIES OPTIONS)
-    cmake_parse_arguments(Generator "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+function(setup_target_for_file)
+    set(options ADD_TEST)
+    set(oneValueArgs NAME SOURCE SOURCE_ROOT NEW_SOURCE)
+    set(multiValueArgs DEPENDENCIES COMPILE_OPTIONS TEST_OPTIONS)
+    cmake_parse_arguments(Generator "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT DEFINED Generator_HEADER)
-        message(FATAL_ERROR "HEADER must be set")
+    if(NOT DEFINED Generator_SOURCE)
+        message(FATAL_ERROR "SOURCE must be set")
     endif()
 
-    if(NOT DEFINED Generator_SUFFIX)
-        # Deduce from the HEADER suffix
-        string(REGEX REPLACE "^.*[\\.]([a-zA-Z]+)$" "\\\\.\\1" Generator_SUFFIX ${Generator_HEADER})
+    if(DEFINED Generator_TEST_OPTIONS AND (NOT Generator_ADD_TEST))
+        message(FATAL_ERROR "ADD_TEST must be set if TEST_OPTIONS is set")
+    endif()
+
+    if(NOT DEFINED Generator_NAME)
+        string(REGEX REPLACE "[\\./]" "-" Generator_NAME ${Generator_SOURCE})
     endif()
 
     if(NOT DEFINED Generator_SOURCE_ROOT)
         set(Generator_SOURCE_ROOT "${CMAKE_BINARY_DIR}/generated")
     endif()
 
-    set(FILE_TEMPLATE "#include <>\nint main() {}\n")
-    string(REPLACE "include <>" "include <${Generator_HEADER}>" file_content ${FILE_TEMPLATE})
-    string(REGEX REPLACE "^(.*)${Generator_SUFFIX}$" "${Generator_SOURCE_ROOT}/\\1_Main.cpp" file_name ${Generator_HEADER})
-    string(REGEX REPLACE "[\\./]" "-" target_name ${Generator_HEADER})
+    if(DEFINED Generator_NEW_SOURCE)
+        string(REGEX REPLACE "^(.*)\\.[a-zA-Z]+$" "${Generator_SOURCE_ROOT}/\\1_Source.cpp" file_name ${Generator_SOURCE})
+        file(WRITE ${file_name} "${Generator_NEW_SOURCE}")
+        add_executable(${Generator_NAME} ${file_name} ${Generator_SOURCE})
+        unset(file_name)
+    else()
+        add_executable(${Generator_NAME} ${Generator_SOURCE})
+    endif()
 
-    file(WRITE ${file_name} "${file_content}")
+    target_link_libraries(${Generator_NAME} ${Generator_DEPENDENCIES})
 
-    add_executable(${target_name} ${file_name})
+    target_compile_options(${Generator_NAME} PRIVATE ${Generator_COMPILE_OPTIONS})
 
-    target_link_libraries(${target_name} ${Generator_DEPENDENCIES})
-
-    target_compile_options(${target_name} PRIVATE ${Generator_OPTIONS})
+    if(Generator_ADD_TEST)
+        add_test(
+            NAME ${Generator_NAME}
+            COMMAND ${Generator_NAME} ${Generator_TEST_OPTIONS}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    endif()
 endfunction()

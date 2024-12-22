@@ -50,9 +50,10 @@ install(TARGETS include
 # Generate sentinel target for each individual header, to enforce no missing includes
 include(TargetGenerator)
 
-foreach(header IN ITEMS ${INCLUDE_SOURCE_FILES})
-    setup_target_for_header(
-        HEADER "${header}"
+foreach(source IN ITEMS ${INCLUDE_SOURCE_FILES})
+    setup_target_for_file(
+        SOURCE "${source}"
+        NEW_SOURCE "#include <${source}>\nint main() {}\n"
         DEPENDENCIES ${PROJECT_NAME}
     )
 endforeach()
