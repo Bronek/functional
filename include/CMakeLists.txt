@@ -47,15 +47,16 @@ install(TARGETS include
     FILE_SET functional
     DESTINATION include)
 
+# Generate sentinel target for each individual header, to enforce no missing includes
 get_target_property(HEADERS ${PROJECT_NAME} HEADER_SET_functional)
 get_target_property(DIR ${PROJECT_NAME} SOURCE_DIR)
 
 include(TargetGenerator)
 
 foreach(header IN ITEMS ${HEADERS})
-    string(REPLACE "${DIR}/" "" short_header ${header})
+    string(REPLACE "${DIR}/" "" test_header ${header})
     setup_target_for_header(
-        HEADER "${short_header}"
-        DEPENDENCIES include
+        HEADER "${test_header}"
+        DEPENDENCIES ${PROJECT_NAME}
     )
 endforeach()
