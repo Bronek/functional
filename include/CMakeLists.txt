@@ -49,9 +49,13 @@ install(TARGETS include
 
 get_target_property(HEADERS ${PROJECT_NAME} HEADER_SET_functional)
 get_target_property(DIR ${PROJECT_NAME} SOURCE_DIR)
-# message(${DIR} ${HEADERS})
+
+include(TargetGenerator)
 
 foreach(header IN ITEMS ${HEADERS})
     string(REPLACE "${DIR}/" "" short_header ${header})
-    message(${short_header})
+    setup_target_for_header(
+        HEADER "${short_header}"
+        DEPENDENCIES include
+    )
 endforeach()
