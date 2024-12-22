@@ -1,9 +1,8 @@
-# Target generator to enforce that a HEADER file compiles cleanly with no
-# additional includes
+# Target generator to enforce that a HEADER file compiles cleanly with no additional includes
 
 function(setup_target_for_header)
     set(oneValueArgs SUFFIX HEADER SOURCE_ROOT)
-    set(multiValueArgs DEPENDENCIES)
+    set(multiValueArgs DEPENDENCIES OPTIONS)
     cmake_parse_arguments(Generator "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT DEFINED Generator_HEADER)
@@ -29,4 +28,6 @@ function(setup_target_for_header)
     add_executable(${target_name} ${file_name})
 
     target_link_libraries(${target_name} ${Generator_DEPENDENCIES})
+
+    target_compile_options(${target_name} PRIVATE ${Generator_OPTIONS})
 endfunction()
