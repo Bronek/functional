@@ -46,3 +46,12 @@ target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 install(TARGETS include
     FILE_SET functional
     DESTINATION include)
+
+get_target_property(HEADERS ${PROJECT_NAME} HEADER_SET_functional)
+get_target_property(DIR ${PROJECT_NAME} SOURCE_DIR)
+# message(${DIR} ${HEADERS})
+
+foreach(header IN ITEMS ${HEADERS})
+    string(REPLACE "${DIR}/" "" short_header ${header})
+    message(${short_header})
+endforeach()
