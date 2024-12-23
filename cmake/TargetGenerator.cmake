@@ -3,7 +3,7 @@
 function(setup_target_for_file)
     set(options ADD_TEST)
     set(oneValueArgs NAME SOURCE SOURCE_ROOT NEW_SOURCE)
-    set(multiValueArgs DEPENDENCIES COMPILE_OPTIONS TEST_OPTIONS)
+    set(multiValueArgs DEPENDENCIES COMPILE_OPTIONS TEST_OPTIONS TEST_LABELS)
     cmake_parse_arguments(Generator "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT DEFINED Generator_SOURCE)
@@ -12,6 +12,10 @@ function(setup_target_for_file)
 
     if(DEFINED Generator_TEST_OPTIONS AND (NOT Generator_ADD_TEST))
         message(FATAL_ERROR "ADD_TEST must be set if TEST_OPTIONS is set")
+    endif()
+
+    if(DEFINED Generator_TEST_LABELS AND (NOT Generator_ADD_TEST))
+        message(FATAL_ERROR "ADD_TEST must be set if TEST_LABELS is set")
     endif()
 
     if(NOT DEFINED Generator_NAME)
@@ -41,5 +45,9 @@ function(setup_target_for_file)
             COMMAND ${Generator_NAME} ${Generator_TEST_OPTIONS}
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         )
+
+        if(Generator_TEST_LABELS)
+            set_property(TEST ${Generator_NAME} PROPERTY LABELS "${Generator_TEST_LABELS}")
+        endif()
     endif()
 endfunction()

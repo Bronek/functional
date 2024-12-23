@@ -35,10 +35,13 @@ set(TESTS_SOURCE_FILES
 include(TargetGenerator)
 
 foreach(source IN ITEMS ${TESTS_SOURCE_FILES})
+    string(REGEX REPLACE "^(detail/|)([a-z_]+)\.cpp$" "\\2" root_name ${source})
     setup_target_for_file(
         SOURCE "${source}"
         DEPENDENCIES include util Catch2::Catch2WithMain
         TEST_OPTIONS -r console
+        TEST_LABELS fn_tests ${root_name}
         ADD_TEST
     )
+    unset(root_name)
 endforeach()
