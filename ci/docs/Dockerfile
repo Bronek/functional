@@ -10,7 +10,6 @@ RUN set -ex ;\
 FROM debian:bookworm AS build
 ARG DOXYGEN_RELEASE=1.12.0
 ARG ZNAI_RELEASE=1.73
-ARG CATCH_RELEASE=3.7.1
 
 ENV CMAKE_GENERATOR=Ninja
 ENV CMAKE_BUILD_TYPE=Debug
@@ -44,21 +43,6 @@ RUN set -ex ;\
     mv znai_tmp/dist /opt/znai ;\
     rm -rf ${FILE} znai_tmp
 
-RUN set -ex ;\
-    DIST="https://github.com/catchorg/Catch2/archive/refs/tags/" ;\
-    FILE="v${CATCH_RELEASE}.tar.gz" ;\
-    wget ${DIST}/${FILE} ;\
-    tar -xzf ${FILE} ;\
-    cd Catch2-${CATCH_RELEASE} ;\
-    cmake -B build -S . \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_TESTING=OFF \
-      -DCATCH_DEVELOPMENT_BUILD=ON \
-      -DCATCH_BUILD_TESTING=OFF ;\
-    cmake --build build/ --target install ;\
-    cd /work ;\
-    rm -rf ${FILE} Catch2-${CATCH_RELEASE}
-
 FROM debian:bookworm
 COPY --from=gcc /usr/local/ /usr/local/
 COPY --from=gcc /etc/ld.so.conf.d/ /etc/ld.so.conf.d/
@@ -87,14 +71,12 @@ RUN set -ex ;\
     update-alternatives --auto cc ;\
     update-alternatives --auto gcc
 
-ENV CMAKE_FIND_CATCH2=1
 ENV PATH=${PATH}:/opt/znai
 ENV CC=/usr/bin/gcc
 ENV CXX=/usr/bin/g++
 ENV CMAKE_GENERATOR=Ninja
 ENV CMAKE_BUILD_TYPE=Debug
 ENV DEBIAN_FRONTEND=noninteractive
-WORKDIR /work
 RUN set -ex ;\
     apt-get update ;\
     apt-get install -y --no-install-recommends \
@@ -102,3 +84,22 @@ RUN set -ex ;\
       cmake ninja-build binutils libc6-dev git \
       openjdk-17-jdk graphviz  ;\
     apt-get clean
+
+ARG CATCH_RELEASE=3.7.1
+WORKDIR /work
+RUN set -ex ;\
+    DIST="https://github.com/catchorg/Catch2/archive/refs/tags/" ;\
+    FILE="v${CATCH_RELEASE}.tar.gz" ;\
+    wget ${DIST}/${FILE} ;\
+    tar -xzf ${FILE} ;\
+    cd Catch2-${CATCH_RELEASE} ;\
+    cmake -B build -S . \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DCATCH_DEVELOPMENT_BUILD=ON \
+      -DCATCH_BUILD_TESTING=OFF ;\
+    cmake --build build/ --target install ;\
+    cd /work ;\
+    rm -rf ${FILE} Catch2-${CATCH_RELEASE}
+
+ENV CMAKE_FIND_CATCH2=1
