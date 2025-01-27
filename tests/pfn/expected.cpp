@@ -133,6 +133,33 @@ TEST_CASE("unexpect", "[expected][polyfill][unexpect]")
 
 TEST_CASE("unexpected", "[expected][polyfill][unexpected]")
 {
-  // TODO
-  SUCCEED();
+  SECTION("is_valid_unexpected")
+  {
+    using ::pfn::detail::_is_valid_unexpected;
+    static_assert(not _is_valid_unexpected<void>);
+    static_assert(not _is_valid_unexpected<void volatile>);
+    static_assert(not _is_valid_unexpected<void const>);
+    static_assert(not _is_valid_unexpected<void const volatile>);
+    static_assert(not _is_valid_unexpected<int *()>);
+    static_assert(not _is_valid_unexpected<void()>);
+    static_assert(not _is_valid_unexpected<void(int) const>);
+    static_assert(not _is_valid_unexpected<int const>);
+    static_assert(not _is_valid_unexpected<int volatile>);
+    static_assert(not _is_valid_unexpected<int const volatile>);
+    static_assert(not _is_valid_unexpected<::pfn::unexpected<int>>);
+    static_assert(not _is_valid_unexpected<::pfn::unexpected<Error>>);
+    static_assert(_is_valid_unexpected<int>);
+    static_assert(_is_valid_unexpected<Error>);
+    static_assert(_is_valid_unexpected<std::optional<int>>);
+    SUCCEED();
+  }
+
+  SECTION("constructors")
+  {
+    using ::pfn::unexpected;
+
+    constexpr unexpected c1{Error::mystery};
+    static_assert(std::is_same_v<decltype(c1), unexpected<Error> const>);
+    const unexpected
+  }
 }
